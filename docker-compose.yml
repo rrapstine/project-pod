@@ -6,7 +6,7 @@ services:
     ports:
       - "8000:80"
     volumes:
-      - ./data:/data
+      - ./data/database.sqlite:/var/www/html/database/database.sqlite
       - ./backend/.env:/var/www/html/.env
 
   frontend:
