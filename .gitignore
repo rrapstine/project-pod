@@ -6,6 +6,9 @@ vendor/
 dist/
 build/
 
+# Database
+*.sqlite*
+
 # Laravel specific
 .env
 .env.local
