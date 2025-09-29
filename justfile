@@ -23,8 +23,8 @@ restart:
 artisan *args:
     podman compose exec api php artisan {{args}}
 
-# Run frontend commands (e.g., just frontend bun install)
-frontend *args:
+# Run bun commands (e.g., just bun install)
+bun *args:
     podman compose exec frontend {{args}}
 
 # Clean database
