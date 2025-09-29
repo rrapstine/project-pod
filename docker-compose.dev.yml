@@ -1,0 +1,32 @@
+version: "3.8"
+
+services:
+  api:
+    volumes:
+      # Mount source code directories for live editing
+      - ./backend/app:/var/www/html/app
+      - ./backend/config:/var/www/html/config
+      - ./backend/resources:/var/www/html/resources
+      - ./backend/routes:/var/www/html/routes
+      - ./backend/database:/var/www/html/database
+      - ./backend/public:/var/www/html/public
+      - ./backend/bootstrap:/var/www/html/bootstrap
+      - ./backend/storage:/var/www/html/storage
+      # Mount configuration files
+      - ./backend/.env:/tmp/.env.host
+      - ./data/database.sqlite:/var/www/html/database/database.sqlite
+      # Do NOT mount vendor/ - use container's PHP dependencies
+
+  frontend:
+    volumes:
+      # Mount source code directories for live editing
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      - ./frontend/index.html:/app/index.html
+      - ./frontend/package.json:/app/package.json
+      - ./frontend/tsconfig.json:/app/tsconfig.json
+      - ./frontend/tsconfig.app.json:/app/tsconfig.app.json
+      - ./frontend/tsconfig.node.json:/app/tsconfig.node.json
+      - ./frontend/vite.config.ts:/app/vite.config.ts
+      - ./frontend/eslint.config.js:/app/eslint.config.js
+      # Do NOT mount node_modules/ - use container's Node dependencies

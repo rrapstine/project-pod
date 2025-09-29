@@ -5,17 +5,11 @@ services:
     build: ./backend
     ports:
       - "8000:80"
-    volumes:
-      - ./data/database.sqlite:/var/www/html/database/database.sqlite
-      - ./backend/.env:/var/www/html/.env
 
   frontend:
     build: ./frontend
     ports:
       - "3000:5173"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
     environment:
       - NODE_ENV=development
 
