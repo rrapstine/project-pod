@@ -25,7 +25,7 @@ artisan *args:
 
 # Run bun commands (e.g., just bun install)
 bun *args:
-    podman compose exec frontend {{args}}
+    podman compose exec frontend bun {{args}}
 
 # Clean database
 resetdb:
