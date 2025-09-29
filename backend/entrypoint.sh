@@ -3,6 +3,11 @@ set -e
 
 echo "Starting Laravel application setup..."
 
+# Ensure directories exist (container will have proper permissions)
+echo "Setting up directories..."
+mkdir -p /var/www/html/storage/framework/{cache,sessions,views}
+mkdir -p /var/www/html/bootstrap/cache
+
 # Copy mounted .env file if it exists
 if [ -f /tmp/.env.host ]; then
     echo "Copying .env from host..."
@@ -37,5 +42,5 @@ fi
 
 echo "Laravel setup complete. Starting Octane server..."
 
-# Start Laravel Octane with Swoole
-exec php artisan octane:start --server=swoole --host=0.0.0.0 --port=80
+# Start Laravel using built-in PHP server (simpler for development)
+exec php artisan serve --host=0.0.0.0 --port=80

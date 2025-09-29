@@ -9,3 +9,10 @@ README.md
 .env
 .nyc_output
 coverage
+vendor
+bootstrap/cache
+storage/framework/cache
+storage/framework/sessions
+storage/framework/views
+storage/logs
+public/storage
