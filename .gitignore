@@ -41,7 +41,7 @@ Thumbs.db
 *~
 
 # Docker (optional, if you want to ignore local Docker files)
-docker-compose.override.yml
+#docker-compose.override.yml
 
 # Temporary files
 *.tmp
