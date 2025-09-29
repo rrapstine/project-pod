@@ -1,5 +1,10 @@
 # Agents Guide
 
+## Git Workflow
+- **CRITICAL**: Create new branch for ALL new features
+- **ALWAYS**: Ask for review and confirmation before commits or merges
+- **NEVER**: Commit or merge without explicit user approval
+
 ## Project Structure
 - **Backend**: Laravel 12 PHP application (backend/)
 - **Frontend**: React + TypeScript + Vite (frontend/)
