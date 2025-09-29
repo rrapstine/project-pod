@@ -8,16 +8,10 @@ echo "Setting up directories..."
 mkdir -p /var/www/html/storage/framework/{cache,sessions,views}
 mkdir -p /var/www/html/bootstrap/cache
 
-# Copy mounted .env file if it exists
-if [ -f /tmp/.env.host ]; then
-    echo "Copying .env from host..."
-    cp /tmp/.env.host /var/www/html/.env
-else
-    echo "No .env.host found, checking if .env already exists..."
-    if [ ! -f /var/www/html/.env ]; then
-        echo "Creating .env from .env.example..."
-        cp /var/www/html/.env.example /var/www/html/.env
-    fi
+# Ensure .env esists
+if [ ! -f /var/www/html/.env ]; then
+    echo "Creating .env from .env.example..."
+    cp /var/www/html/.env.example /var/www/html/.env
 fi
 
 # Generate application key if it doesn't exist

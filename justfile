@@ -4,7 +4,8 @@ up:
 
 # Start services with rebuild in detached mode
 rebuild:
-    podman compose up --build -d
+    podman compose build --no-cache
+    podman compose up -d
 
 # Build services
 build:
