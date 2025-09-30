@@ -11,30 +11,34 @@
 - **Container**: Uses Podman with docker-compose
 
 ## Build/Test Commands
-- `just up` - Start services in detached mode
 - `just test` - Run backend tests via PHPUnit
 - `just artisan test --filter=TestName` - Run single test
+- `just artisan test tests/Feature/ExampleTest.php` - Run specific test file
 - `cd frontend && bun run lint` - Lint frontend
 - `cd frontend && bun run build` - Build frontend
+- `vendor/bin/pint --dirty` - Format PHP code (REQUIRED before commits)
 
 ## Package Management - MISSION CRITICAL
-- **NEVER EDIT**: composer.json, package.json, or any package manifest files directly
-- **ALWAYS USE**: Package manager commands instead:
-  - `composer require package-name` (production dependencies)
-  - `composer require --dev package-name` (development dependencies)
-  - `bun add package-name` (production dependencies)
-  - `bun add --dev package-name` (development dependencies)
-- **REASONING**: Package managers handle versioning, conflicts, and lock files correctly
-- **EXAMPLES**: Testing libraries should use --dev flag, runtime dependencies should not
+- **NEVER EDIT**: composer.json, package.json directly - use commands:
+  - `just composer add package-name` (with rebuild)
+  - `just composer add package-name --dev` (dev deps with rebuild)
+  - `just bun add package-name` (with rebuild)
+  - **WHY**: Prevents stale volume issues and handles versioning correctly
+
+## Laravel Boost Requirements
+- **ALWAYS** use `php artisan make:` commands for new files (controllers, models, etc.)
+- **REQUIRED**: Form Request classes for validation (not inline validation)
+- Use PHP 8.4 constructor promotion: `public function __construct(public GitHub $github) {}`
+- **ALWAYS** explicit return types: `protected function getName(): string`
+- Use Eloquent relationships over raw queries, prevent N+1 with eager loading
 
 ## Code Style
-- **PHP**: PSR-4 autoloading, snake_case methods, PascalCase classes
+- **PHP**: PSR-4, snake_case methods, PascalCase classes, curly braces always
 - **TypeScript**: camelCase variables/functions, PascalCase components
-- **Imports**: Group by external libs first, then local imports
-- **Files**: Use absolute paths from project root
-- **Error Handling**: Use Laravel exceptions, try/catch for async operations
+- **NO COMMENTS** in code - use PHPDoc blocks only when needed
+- Group imports: external libs first, then local imports
 
-## Testing
-- Backend tests in `tests/Feature/` and `tests/Unit/`
-- Use `$this->get()` for HTTP tests, `assertStatus()` for responses
-- PHPUnit configuration in `phpunit.xml`
+## Testing & Quality
+- Use `$this->get()`, `assertStatus()` for HTTP tests
+- Run specific test after changes: `just artisan test --filter=testName`
+- **REQUIRED**: Run `vendor/bin/pint --dirty` before finalizing changes
