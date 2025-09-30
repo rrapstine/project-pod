@@ -11,7 +11,7 @@
 #   just bun remove <packages>       - Remove bun packages with rebuild
 #
 # REBUILD COMMANDS:
-#   just rebuild                     - Clear volumes + rebuild (prevents stale deps)
+#   just rebuild [backend|frontend]  - Clear volumes + rebuild specific/all containers
 #   just build                       - Standard build (keeps volumes)
 #   just nuclear                     - Remove EVERYTHING and rebuild
 #
@@ -30,22 +30,56 @@ up:
 
 # Rebuild - clears anonymous volumes to prevent stale dependencies
 # This is the default rebuild behavior since volume issues are common
-rebuild:
+# Usage: just rebuild [backend|frontend] - defaults to all services
+rebuild container="all":
     #!/usr/bin/env bash
-    echo "🧹 Stopping services and clearing stale volumes..."
-    podman compose down
-    
-    # Remove anonymous volumes to clear stale dependencies
-    echo "🗑️  Removing anonymous volumes..."
-    podman volume ls -q | grep "project-pod.*_[a-f0-9]" | xargs -r podman volume rm -f
-    
-    echo "🔨 Building fresh images..."
-    podman compose build --no-cache
-    
-    echo "🚀 Starting services with fresh volumes..."
-    podman compose up -d
-    
-    echo "✅ Rebuild complete!"
+    if [ "{{container}}" = "backend" ]; then
+        echo "🧹 Stopping services and clearing stale volumes..."
+        podman compose down
+        
+        echo "🗑️  Removing anonymous volumes..."
+        podman volume ls -q | grep "project-pod.*_[a-f0-9]" | xargs -r podman volume rm -f
+        
+        echo "🔨 Building fresh backend image..."
+        podman compose build --no-cache api
+        
+        echo "🚀 Starting services..."
+        podman compose up -d
+        
+        echo "✅ Backend rebuild complete!"
+    elif [ "{{container}}" = "frontend" ]; then
+        echo "🧹 Stopping services and clearing stale volumes..."
+        podman compose down
+        
+        echo "🗑️  Removing anonymous volumes..."
+        podman volume ls -q | grep "project-pod.*_[a-f0-9]" | xargs -r podman volume rm -f
+        
+        echo "🔨 Building fresh frontend image..."
+        podman compose build --no-cache frontend
+        
+        echo "🚀 Starting services..."
+        podman compose up -d
+        
+        echo "✅ Frontend rebuild complete!"
+    elif [ "{{container}}" = "all" ]; then
+        echo "🧹 Stopping services and clearing stale volumes..."
+        podman compose down
+        
+        echo "🗑️  Removing anonymous volumes..."
+        podman volume ls -q | grep "project-pod.*_[a-f0-9]" | xargs -r podman volume rm -f
+        
+        echo "🔨 Building fresh images..."
+        podman compose build --no-cache
+        
+        echo "🚀 Starting services with fresh volumes..."
+        podman compose up -d
+        
+        echo "✅ Rebuild complete!"
+    else
+        echo "❌ Invalid container: {{container}}"
+        echo "Usage: just rebuild [backend|frontend|all]"
+        exit 1
+    fi
 
 # Nuclear option - remove EVERYTHING and rebuild from scratch
 nuclear:
@@ -148,14 +182,14 @@ composer *args:
             echo "📦 Adding composer packages: $*"
             cd backend && composer require "$@"
         fi
-        echo "🔨 Rebuilding to prevent stale volume issues..."
-        just rebuild
+        echo "🔨 Rebuilding backend to prevent stale volume issues..."
+        just rebuild backend
     elif [[ "$1" == "remove" ]]; then
         shift  # Remove 'remove' from args
         echo "🗑️ Removing composer packages: $*"
         cd backend && composer remove "$@"
-        echo "🔨 Rebuilding to prevent stale volume issues..."
-        just rebuild
+        echo "🔨 Rebuilding backend to prevent stale volume issues..."
+        just rebuild backend
     else
         echo "📦 Running composer command: $*"
         cd backend && composer "$@"
@@ -173,14 +207,14 @@ bun *args:
             echo "📦 Adding bun packages: $*"
             cd frontend && bun add "$@"
         fi
-        echo "🔨 Rebuilding to prevent stale volume issues..."
-        just rebuild
+        echo "🔨 Rebuilding frontend to prevent stale volume issues..."
+        just rebuild frontend
     elif [[ "$1" == "remove" ]]; then
         shift  # Remove 'remove' from args
         echo "🗑️ Removing bun packages: $*"
         cd frontend && bun remove "$@"
-        echo "🔨 Rebuilding to prevent stale volume issues..."
-        just rebuild
+        echo "🔨 Rebuilding frontend to prevent stale volume issues..."
+        just rebuild frontend
     else
         echo "📦 Running bun command: $*"
         cd frontend && bun "$@"
