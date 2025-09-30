@@ -3,6 +3,24 @@ set -e
 
 echo "Starting Laravel application setup..."
 
+# Check if vendor directory exists and has dependencies (from Docker build or volume)
+# We need to check if vendor directory actually has content, not just if it exists
+if [ ! -d "vendor" ] || [ ! -f "vendor/autoload.php" ] || [ -z "$(ls -A vendor 2>/dev/null)" ]; then
+    echo "Installing dependencies..."
+    composer install --optimize-autoloader --no-scripts --no-interaction
+    echo "Dependencies installed, continuing setup..."
+else
+    echo "Dependencies already available, skipping installation..."
+fi
+
+# Debug: Show current working directory and PHP
+echo "Current directory: $(pwd)"
+echo "PHP version: $(php --version | head -1)"
+
+# Dependencies are now installed
+echo "Dependencies installed, continuing setup..."
+
+
 # Ensure directories exist (container will have proper permissions)
 echo "Setting up directories..."
 mkdir -p /var/www/html/storage/framework/{cache,sessions,views}

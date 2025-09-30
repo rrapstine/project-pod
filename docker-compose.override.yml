@@ -4,8 +4,10 @@ services:
   api:
     volumes:
       - ./backend:/var/www/html
+      - /var/www/html/vendor
       - ./data/database.sqlite:/var/www/html/database/database.sqlite
 
   frontend:
     volumes:
       - ./frontend:/app
+      - /app/node_modules

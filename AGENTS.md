@@ -17,6 +17,16 @@
 - `cd frontend && bun run lint` - Lint frontend
 - `cd frontend && bun run build` - Build frontend
 
+## Package Management - MISSION CRITICAL
+- **NEVER EDIT**: composer.json, package.json, or any package manifest files directly
+- **ALWAYS USE**: Package manager commands instead:
+  - `composer require package-name` (production dependencies)
+  - `composer require --dev package-name` (development dependencies)
+  - `bun add package-name` (production dependencies)
+  - `bun add --dev package-name` (development dependencies)
+- **REASONING**: Package managers handle versioning, conflicts, and lock files correctly
+- **EXAMPLES**: Testing libraries should use --dev flag, runtime dependencies should not
+
 ## Code Style
 - **PHP**: PSR-4 autoloading, snake_case methods, PascalCase classes
 - **TypeScript**: camelCase variables/functions, PascalCase components

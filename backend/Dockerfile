@@ -20,8 +20,8 @@ RUN apt-get update && apt-get install -y \
 # Install PHP extensions
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd pdo_sqlite
 
-# Install Swoole for Octane with SSL support
-RUN pecl install swoole && docker-php-ext-enable swoole
+# Install Swoole for Octane with SSL support (temporarily disabled for testing)
+# RUN pecl install swoole && docker-php-ext-enable swoole
 
 # Get latest Composer
 COPY --from=docker.io/composer:latest /usr/bin/composer /usr/bin/composer
