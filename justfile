@@ -109,6 +109,12 @@ resetdb:
     echo "🗄️  Resetting database..."
     just artisan migrate:fresh
 
+# Show running containers and their statuses
+status:
+    #!/usr/bin/env bash
+    echo "🐳 Container Status:"
+    podman compose ps
+
 # View logs
 logs:
     #!/usr/bin/env bash
