@@ -2,6 +2,14 @@
 # Project Pod - Development Commands
 # =============================================================================
 # 
+# QUICK START:
+#   just up                          - Start all services (access via localhost:4321)
+#
+# ACCESS POINTS:
+#   localhost:4321                   - Frontend (React app)
+#   localhost:4321/api               - Backend API (Laravel)
+#   localhost:8080                   - Traefik dashboard
+# 
 # DEPENDENCY MANAGEMENT (prevents stale volume issues):
 #   just composer add <packages>     - Add composer packages with rebuild
 #   just composer add <packages> --dev - Add composer dev packages with rebuild  
