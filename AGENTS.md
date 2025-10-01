@@ -4,6 +4,7 @@
 - **CRITICAL**: Create new branch for ALL new features
 - **ALWAYS**: Ask for review and confirmation before commits or merges
 - **NEVER**: Commit or merge without explicit user approval
+- **BEFORE MERGE**: Update project README.md to reflect new features/changes, then commit the update as part of the branch before merging to main
 
 ## Project Structure
 - **Backend**: Laravel 12 PHP application (backend/)
