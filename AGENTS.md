@@ -43,3 +43,8 @@
 - Use `$this->get()`, `assertStatus()` for HTTP tests
 - Run specific test after changes: `just artisan test --filter=testName`
 - **REQUIRED**: Run `vendor/bin/pint --dirty` before finalizing changes
+## Authentication Architecture
+- **SPA AUTH**: Session-based authentication using Laravel Sanctum stateful mode
+- **NO API TOKENS**: This is an SPA sharing the same domain - use cookies/sessions only
+- **CSRF**: Frontend must call `/sanctum/csrf-cookie` before auth requests
+- **NEVER** suggest API tokens, bearer tokens, or HasApiTokens trait for this project

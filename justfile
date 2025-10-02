@@ -1,7 +1,7 @@
 # =============================================================================
 # Project Pod - Development Commands
 # =============================================================================
-# 
+#
 # QUICK START:
 #   just up                          - Start all services (access via localhost:4321)
 #
@@ -9,13 +9,13 @@
 #   localhost:4321                   - Frontend (React app)
 #   localhost:4321/api               - Backend API (Laravel)
 #   localhost:8080                   - Traefik dashboard
-# 
+#
 # DEPENDENCY MANAGEMENT (prevents stale volume issues):
-#   just composer add <packages>     - Add composer packages with rebuild
-#   just composer add <packages> --dev - Add composer dev packages with rebuild  
+#   just composer add <packages>     - Add composer packages with rebuild (runs in container)
+#   just composer add <packages> --dev - Add composer dev packages with rebuild (runs in container)
 #   just bun add <packages>          - Add bun packages with rebuild
 #   just bun add <packages> --dev    - Add bun dev packages with rebuild
-#   just composer remove <packages>  - Remove composer packages with rebuild
+#   just composer remove <packages>  - Remove composer packages with rebuild (runs in container)
 #   just bun remove <packages>       - Remove bun packages with rebuild
 #
 # REBUILD COMMANDS:
@@ -44,44 +44,44 @@ rebuild container="all":
     if [ "{{container}}" = "backend" ]; then
         echo "🧹 Stopping services and clearing stale volumes..."
         podman compose down
-        
+
         echo "🗑️  Removing anonymous volumes..."
         podman volume ls -q | grep "project-pod.*_[a-f0-9]" | xargs -r podman volume rm -f
-        
+
         echo "🔨 Building fresh backend image..."
         podman compose build --no-cache api
-        
+
         echo "🚀 Starting services..."
         podman compose up -d
-        
+
         echo "✅ Backend rebuild complete!"
     elif [ "{{container}}" = "frontend" ]; then
         echo "🧹 Stopping services and clearing stale volumes..."
         podman compose down
-        
+
         echo "🗑️  Removing anonymous volumes..."
         podman volume ls -q | grep "project-pod.*_[a-f0-9]" | xargs -r podman volume rm -f
-        
+
         echo "🔨 Building fresh frontend image..."
         podman compose build --no-cache frontend
-        
+
         echo "🚀 Starting services..."
         podman compose up -d
-        
+
         echo "✅ Frontend rebuild complete!"
     elif [ "{{container}}" = "all" ]; then
         echo "🧹 Stopping services and clearing stale volumes..."
         podman compose down
-        
+
         echo "🗑️  Removing anonymous volumes..."
         podman volume ls -q | grep "project-pod.*_[a-f0-9]" | xargs -r podman volume rm -f
-        
+
         echo "🔨 Building fresh images..."
         podman compose build --no-cache
-        
+
         echo "🚀 Starting services with fresh volumes..."
         podman compose up -d
-        
+
         echo "✅ Rebuild complete!"
     else
         echo "❌ Invalid container: {{container}}"
@@ -108,7 +108,7 @@ nuclear:
 # Build services
 build:
     #!/usr/bin/env bash
-    echo "🔨 Building services..."  
+    echo "🔨 Building services..."
     podman compose build --no-cache
 
 # Stop services
@@ -172,6 +172,9 @@ test target="backend":
     elif [ "{{target}}" = "backend" ]; then
         echo "🧪 Running backend tests..."
         podman compose exec api php artisan test
+    elif [ "{{target}}" = "api" ]; then
+        echo "🧪 Running api tests..."
+        slumber -f collections/api.yml
     else
         echo "❌ Unknown test target: {{target}}"
         echo "Usage: just test [frontend|backend]"
@@ -185,25 +188,25 @@ composer *args:
         shift  # Remove 'add' from args
         if [[ "$*" == *"--dev"* ]]; then
             echo "📦 Adding composer dev packages: $*"
-            cd backend && composer require --dev "$@"
+            podman compose exec api composer require --dev "$@"
         else
             echo "📦 Adding composer packages: $*"
-            cd backend && composer require "$@"
+            podman compose exec api composer require "$@"
         fi
         echo "🔨 Rebuilding backend to prevent stale volume issues..."
         just rebuild backend
     elif [[ "$1" == "remove" ]]; then
         shift  # Remove 'remove' from args
         echo "🗑️ Removing composer packages: $*"
-        cd backend && composer remove "$@"
+        podman compose exec api composer remove "$@"
         echo "🔨 Rebuilding backend to prevent stale volume issues..."
         just rebuild backend
     else
         echo "📦 Running composer command: $*"
-        cd backend && composer "$@"
+        podman compose exec api composer "$@"
     fi
 
-# Add bun dependencies with automatic rebuild  
+# Add bun dependencies with automatic rebuild
 bun *args:
     #!/usr/bin/env bash
     if [[ "$1" == "add" ]]; then
