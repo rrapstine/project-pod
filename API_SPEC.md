@@ -2,7 +2,9 @@
 
 ## Overview
 
-- **Base URL**: `https://api.projectpod.test/v1` (dev), `https://api.yourdomain.com/v1` (prod)
+- **Base URL**: `https://api.projectpod.test` (dev), `https://api.yourdomain.com` (prod)
+- **Auth Routes**: Direct paths (e.g., `/login`, `/register`)
+- **API Routes**: Versioned paths with `/v1/` prefix (e.g., `/v1/workspaces`, `/v1/projects`)
 - **Authentication**: Laravel Sanctum Bearer Token
 - **Content Type**: `application/json`
 - **Framework**: Laravel 12 with Eloquent ORM
@@ -10,7 +12,7 @@
 
 ## Authentication
 
-### POST `/v1/auth/register`
+### POST `/register`
 Register a new user account.
 
 **Request Body:**
@@ -40,7 +42,7 @@ Register a new user account.
 }
 ```
 
-### POST `/v1/auth/login`
+### POST `/login`
 Authenticate user and return access token.
 
 **Request Body:**
@@ -68,14 +70,14 @@ Authenticate user and return access token.
 }
 ```
 
-### POST `/v1/auth/logout`
+### POST `/logout`
 Revoke current access token.
 
 **Headers:** `Authorization: Bearer {token}`
 
 **Response (204):** No content
 
-### GET `/v1/auth/user`
+### GET `/user`
 Get authenticated user information.
 
 **Headers:** `Authorization: Bearer {token}`
