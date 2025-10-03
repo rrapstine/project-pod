@@ -1,0 +1,31 @@
+script:pre-request {
+  const xsrfToken = bru.getEnvVar('xsrf_token');
+  const frontendUrl = bru.getEnvVar('frontend_url');
+  
+  if (xsrfToken) {
+    req.headers['X-XSRF-TOKEN'] = decodeURIComponent(xsrfToken);
+    req.headers.Referer = frontendUrl;
+  }
+}
+
+docs {
+  Authentication Strategy:
+  
+  This collection uses Laravel Sanctum session-based authentication.
+  
+  PUBLIC ROUTES (no auth required):
+  - GET /sanctum/csrf-cookie
+  - POST /auth/login  
+  - POST /auth/register
+  - GET /health
+  
+  AUTHENTICATED ROUTES (session required):
+  - ALL other routes require session authentication
+  
+  Setup Process:
+  1. Run "CSRF Cookie" to get XSRF token
+  2. Run "auth/Login" to login and establish session
+  3. All subsequent requests will use the session automatically
+  
+  The session cookies are managed automatically by Bruno.
+}

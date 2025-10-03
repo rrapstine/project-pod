@@ -1,0 +1,30 @@
+meta {
+  name: Login SQL Injection
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/auth/login
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+}
+
+body:json {
+  {
+    "email": "'; DROP TABLE users; --",
+    "password": "password123"
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+docs {
+  SQL injection attack test - should be safely handled by the application
+}
