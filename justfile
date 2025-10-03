@@ -143,8 +143,6 @@ artisan *args:
     echo "⚡ Running artisan {{args}}..."
     podman compose exec api php artisan {{args}}
 
-
-
 # Clean database
 resetdb:
     #!/usr/bin/env bash
@@ -172,9 +170,6 @@ test target="backend":
     elif [ "{{target}}" = "backend" ]; then
         echo "🧪 Running backend tests..."
         podman compose exec api php artisan test
-    elif [ "{{target}}" = "api" ]; then
-        echo "🧪 Running api tests..."
-        slumber -f collections/api.yml
     else
         echo "❌ Unknown test target: {{target}}"
         echo "Usage: just test [frontend|backend]"
@@ -243,3 +238,16 @@ clean volumes:
     podman compose down
     podman volume ls -q | grep "project-pod.*_[a-f0-9]" | xargs -r podman volume rm -f
     echo "✅ Anonymous volumes cleaned!"
+
+# Run HTTP tests with hurl
+hurl *args:
+    #!/usr/bin/env bash
+
+    # First get the csrf token and session cookie
+    hurl --cookie-jar cookies.txt ./hurl/setup/csrf-token.hurl ./hurl/auth/login.hurl
+
+    # Now run the passed endpoint with the cookie jar
+    hurl -b cookies.txt ./hurl/{{args}}.hurl
+
+    # Clean up the cookie jar
+    rm -f cookies.txt
