@@ -6,8 +6,6 @@ GET {{HURL_base_url}}/sanctum/csrf-cookie
 Accept: application/json
 
 HTTP 204
-[Captures]
-xsrf_token: cookie "XSRF-TOKEN"
 
 ###
 
@@ -15,8 +13,6 @@ xsrf_token: cookie "XSRF-TOKEN"
 POST {{HURL_base_url}}/auth/login
 Accept: application/json
 Content-Type: application/json
-[Cookies]
-X-XSRF-TOKEN: {{xsrf_token}}
 
 {
   "email": "{{HURL_test_user_email}}",
