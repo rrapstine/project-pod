@@ -31,3 +31,13 @@
 - Create new branch for all features
 - Ask for review before commits/merges
 - Update README.md before merging to main
+
+## Commit Management
+- **ALWAYS** create semantic commits for all changes since last session
+- **NEVER** commit without explicit user request
+- Use semantic commit format: `type(scope): description`
+- Types: feat, fix, refactor, docs, chore, test, style
+- Group related changes into logical commits
+- Check `git status`, `git diff`, and `git log` before committing
+- Create multiple commits if changes span different concerns
+- Example: `feat(auth): implement logout with session management`
