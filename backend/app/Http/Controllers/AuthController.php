@@ -6,6 +6,7 @@ use App\Http\Requests\LoginUserRequest;
 use App\Http\Requests\RegisterUserRequest;
 use App\Models\User;
 use App\Traits\ApiResponses;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
@@ -37,7 +38,7 @@ class AuthController extends Controller
             'email' => $validated['email'],
             'password' => $validated['password'],
         ])) {
-            return $this->error('Invalid credentials', [], 401);
+            return $this->error('Invalid credentials', 401);
         }
 
         return $this->ok('Logged in', [
@@ -45,10 +46,20 @@ class AuthController extends Controller
         ], 200);
     }
 
-    public function logout()
+    public function logout(Request $request)
     {
-        Auth::logout();
+        $user = Auth::user();
 
-        return $this->ok('Logged out', [], 200);
+        if (! $user) {
+            return $this->error('User not logged in', 401);
+        }
+
+        $username = $user->name;
+
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return $this->ok($username . ' was logged out successfully');
     }
 }
