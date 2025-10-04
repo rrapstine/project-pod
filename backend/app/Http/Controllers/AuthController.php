@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Hash;
 class AuthController extends Controller
 {
     use ApiResponses;
+
     public function register(RegisterUserRequest $request)
     {
         $validated = $request->validated();
@@ -25,7 +26,7 @@ class AuthController extends Controller
 
         Auth::login($user);
 
-        return $this->ok('User created', [
+        return $this->success('User created', [
             'user' => $user,
         ], 201);
     }
@@ -57,9 +58,12 @@ class AuthController extends Controller
         $username = $user->name;
 
         Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
 
-        return $this->ok($username . ' was logged out successfully');
+        if ($request->hasSession()) {
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
+
+        return $this->ok($username.' was logged out successfully');
     }
 }
