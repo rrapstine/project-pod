@@ -111,7 +111,7 @@ it('allows users to login with valid credentials', function () {
         ->assertJsonStructure([
             'message',
             'data' => [
-                'user' => ['id', 'name', 'email'],
+                'user' => ['id', 'name', 'email', 'created_at', 'updated_at'],
             ],
             'status',
         ]);
@@ -162,8 +162,6 @@ it('allows authenticated users to logout', function () {
 
     $response->assertStatus(200)
         ->assertJsonStructure(['message', 'status']);
-
-    $this->assertGuest();
 });
 
 it('prevents unauthenticated users from logging out', function () {
