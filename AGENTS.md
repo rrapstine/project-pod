@@ -1,5 +1,7 @@
 # AGENTS.md
 
+**REVIEW INSTRUCTIONS.md FOR FOR BEHAVIOR CONTEXT**
+
 ## Build, Lint, and Test
 - Backend: `just test` (all), `just artisan test --filter=TestName` (single), `just artisan test tests/Feature/ExampleTest.php` (file)
 - Frontend: `cd frontend && bun run lint` (lint), `cd frontend && bun run build` (build)
