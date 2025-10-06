@@ -35,8 +35,6 @@ class ProjectController extends Controller
      */
     public function store(StoreProjectRequest $request, Workspace $workspace)
     {
-        // dump($request->validated(), $workspace);
-
         $this->authorize('view', $workspace);
 
         $project = $workspace->projects()->create([
