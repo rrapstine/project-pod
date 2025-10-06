@@ -1,0 +1,35 @@
+meta {
+  name: Register
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{base_url}}/auth/register
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+}
+
+body:json {
+  {
+    "name": "Test User",
+    "email": "{{test_user_email}}",
+    "password": "{{test_user_password}}",
+    "password_confirmation": "{{test_user_password}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+docs {
+  🌐 PUBLIC ROUTE - No authentication required
+  
+  This is one of the few routes that doesn't require session authentication.
+  User registration endpoint for creating new accounts.
+}

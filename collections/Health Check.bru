@@ -1,0 +1,26 @@
+meta {
+  name: Health Check
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{base_url}}/health
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/json
+}
+
+assert {
+  res.status: eq 200
+}
+
+docs {
+  🌐 PUBLIC ROUTE - No authentication required
+  
+  Basic health check endpoint to verify API is responding.
+  This is one of the few routes that doesn't require session authentication.
+}

@@ -1,0 +1,37 @@
+meta {
+  name: CSRF Cookie
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base_url}}/sanctum/csrf-cookie
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/json
+}
+
+assert {
+  res.status: eq 204
+}
+
+script:post-response {
+  const cookieHeader = res.headers['set-cookie'];
+  
+  if (cookieHeader) {
+    const xsrfToken = cookieHeader[0].match(/XSRF-TOKEN=([^;]+)/);
+    bru.setEnvVar('xsrf_token', xsrfToken[1]);
+  }
+}
+
+docs {
+  🌐 PUBLIC ROUTE - No authentication required
+  
+  Gets CSRF token from Laravel Sanctum for session-based authentication.
+  This is one of the few routes that doesn't require session authentication.
+  
+  Run this FIRST before any authenticated requests to get the XSRF token.
+}

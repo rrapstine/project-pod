@@ -1,0 +1,30 @@
+meta {
+  name: Login XSS
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/auth/login
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+}
+
+body:json {
+  {
+    "email": "<script>alert('xss')</script>@test.com",
+    "password": "password123"
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+docs {
+  XSS attack test - should be safely handled by the application
+}

@@ -3,7 +3,7 @@
   "mcp": {
     "laravel_boost": {
       "type": "local",
-      "command": ["php", "backend/artisan", "boost:mcp"],
+      "command": ["just", "backend/artisan", "boost:mcp"],
       "enabled": true
     }
   }

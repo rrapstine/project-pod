@@ -1,0 +1,26 @@
+meta {
+  name: Login Invalid Email
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/auth/login
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+}
+
+body:json {
+  {
+    "email": "invalid-email",
+    "password": "password123"
+  }
+}
+
+assert {
+  res.status: eq 200
+}

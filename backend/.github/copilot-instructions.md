@@ -8,7 +8,7 @@ The Laravel Boost guidelines are specifically curated by Laravel maintainers for
 ## Foundational Context
 This application is a Laravel application and its main Laravel ecosystems package & versions are below. You are an expert with them all. Ensure you abide by these specific packages & versions.
 
-- php - 8.4.12
+- php - 8.4.13
 - laravel/framework (LARAVEL) - v12
 - laravel/octane (OCTANE) - v2
 - laravel/prompts (PROMPTS) - v0
@@ -186,20 +186,42 @@ protected function isAccessible(User $user, ?string $path = null): bool
 - Do not run `vendor/bin/pint --test`, simply run `vendor/bin/pint` to fix any formatting issues.
 
 
-=== phpunit/core rules ===
+=== pest/core rules ===
 
-## PHPUnit Core
+## Pest Testing Framework
 
-- This application uses PHPUnit for testing. All tests must be written as PHPUnit classes. Use `php artisan make:test --phpunit <name>` to create a new test.
-- If you see a test using "Pest", convert it to PHPUnit.
+- This application uses Pest for testing. All tests must be written using Pest syntax (function-based, not class-based).
+- If you see a test using PHPUnit class syntax, convert it to Pest.
+- Use `it()` or `test()` functions to define tests - they read like natural language.
+- Use `uses()` at the top of test files to declare traits like `RefreshDatabase`.
 - Every time a test has been updated, run that singular test.
 - When the tests relating to your feature are passing, ask the user if they would like to also run the entire test suite to make sure everything is still passing.
 - Tests should test all of the happy paths, failure paths, and weird paths.
 - You must not remove any tests or test files from the tests directory without approval. These are not temporary or helper files, these are core to the application.
 
+### Pest Test Structure
+```php
+<?php
+
+use App\Models\User;
+
+uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+
+it('does something', function () {
+    // Arrange
+    $user = User::factory()->create();
+    
+    // Act
+    $response = $this->actingAs($user)->getJson('/endpoint');
+    
+    // Assert
+    $response->assertStatus(200);
+});
+```
+
 ### Running Tests
 - Run the minimal number of tests, using an appropriate filter, before finalizing.
 - To run all tests: `php artisan test`.
 - To run all tests in a file: `php artisan test tests/Feature/ExampleTest.php`.
-- To filter on a particular test name: `php artisan test --filter=testName` (recommended after making a change to a related file).
+- To filter on a particular test: `php artisan test --filter="test name"` (use the string from it('test name')).
 </laravel-boost-guidelines>

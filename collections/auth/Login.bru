@@ -1,0 +1,33 @@
+meta {
+  name: Login
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/auth/login
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "{{test_user_email}}",
+    "password": "{{test_user_password}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+docs {
+  Complete authentication setup that logs in a test user.
+  Requires CSRF Cookie to be run first to get the XSRF token.
+  Uses environment variables for test user credentials.
+}
