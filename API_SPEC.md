@@ -2,17 +2,25 @@
 
 ## Overview
 
-- **Base URL**: `https://api.projectpod.test` (dev), `https://api.yourdomain.com` (prod)
-- **Auth Routes**: Direct paths (e.g., `/login`, `/register`)
+- **Auth Routes**: Direct paths (e.g., `/auth/login`, `/auth/register`)
 - **API Routes**: Versioned paths with `/v1/` prefix (e.g., `/v1/workspaces`, `/v1/projects`)
-- **Authentication**: Laravel Sanctum Bearer Token
+- **Authentication**: Laravel Sanctum Session-based (stateful SPA)
 - **Content Type**: `application/json`
 - **Framework**: Laravel 12 with Eloquent ORM
-- **Response Format**: Laravel API Resources
+- **Response Format**: ApiResponses trait wrapping API Resources (`{message, data, status}`)
+- **Pagination**: Not implemented for MVP (returns all resources)
+
+## Routing Philosophy
+
+- **Read operations** (index, show): Can be top-level or nested
+- **Create operations**: Nested under parent resource to establish relationship
+- **Update/Delete operations**: Top-level (simpler for frontend, security enforced via policies)
 
 ## Authentication
 
-### POST `/register`
+**Note**: This API uses Laravel Sanctum with session-based authentication for SPA. No bearer tokens are used. The frontend must call `/sanctum/csrf-cookie` before any auth requests.
+
+### POST `/auth/register`
 Register a new user account.
 
 **Request Body:**
@@ -28,22 +36,21 @@ Register a new user account.
 **Response (201):**
 ```json
 {
+  "message": "User registered successfully",
   "data": {
-    "user": {
-      "id": 1,
-      "name": "John Doe",
-      "email": "john@example.com",
-      "email_verified_at": null,
-      "created_at": "2025-01-01T00:00:00.000000Z",
-      "updated_at": "2025-01-01T00:00:00.000000Z"
-    },
-    "token": "1|abc123..."
-  }
+    "id": 1,
+    "name": "John Doe",
+    "email": "john@example.com",
+    "email_verified_at": null,
+    "created_at": "2025-01-01T00:00:00.000000Z",
+    "updated_at": "2025-01-01T00:00:00.000000Z"
+  },
+  "status": 201
 }
 ```
 
-### POST `/login`
-Authenticate user and return access token.
+### POST `/auth/login`
+Authenticate user and create session.
 
 **Request Body:**
 ```json
@@ -56,35 +63,7 @@ Authenticate user and return access token.
 **Response (200):**
 ```json
 {
-  "data": {
-    "user": {
-      "id": 1,
-      "name": "John Doe",
-      "email": "john@example.com",
-      "email_verified_at": null,
-      "created_at": "2025-01-01T00:00:00.000000Z",
-      "updated_at": "2025-01-01T00:00:00.000000Z"
-    },
-    "token": "1|abc123..."
-  }
-}
-```
-
-### POST `/logout`
-Revoke current access token.
-
-**Headers:** `Authorization: Bearer {token}`
-
-**Response (204):** No content
-
-### GET `/user`
-Get authenticated user information.
-
-**Headers:** `Authorization: Bearer {token}`
-
-**Response (200):**
-```json
-{
+  "message": "Login successful",
   "data": {
     "id": 1,
     "name": "John Doe",
@@ -92,57 +71,59 @@ Get authenticated user information.
     "email_verified_at": null,
     "created_at": "2025-01-01T00:00:00.000000Z",
     "updated_at": "2025-01-01T00:00:00.000000Z"
-  }
+  },
+  "status": 200
 }
 ```
 
-## Workspaces
-
-### GET `/v1/workspaces`
-List all workspaces for authenticated user.
-
-**Headers:** `Authorization: Bearer {token}`
-
-**Query Parameters:**
-- `page` (integer): Page number for pagination
-- `per_page` (integer): Items per page (default: 15, max: 100)
+### POST `/auth/logout`
+End user session.
 
 **Response (200):**
 ```json
 {
+  "message": "Logout successful",
+  "data": null,
+  "status": 200
+}
+```
+
+### GET `/sanctum/csrf-cookie`
+Set CSRF cookie for subsequent requests.
+
+**Response (204):** No content (sets CSRF cookies)
+
+## Workspaces ✅ IMPLEMENTED
+
+### GET `/v1/workspaces`
+List all workspaces for authenticated user.
+
+**Authentication**: Session-based (no auth header required)
+
+**Response (200):**
+```json
+{
+  "message": "Workspaces retrieved successfully",
   "data": [
     {
       "id": 1,
       "name": "Personal Projects",
       "description": "My personal side projects",
       "color": "#3b82f6",
-      "projects_count": 5,
       "created_at": "2025-01-01T00:00:00.000000Z",
       "updated_at": "2025-01-01T00:00:00.000000Z"
     }
   ],
-  "links": {
-    "first": "https://api.projectpod.test/v1/workspaces?page=1",
-    "last": "https://api.projectpod.test/v1/workspaces?page=1",
-    "prev": null,
-    "next": null
-  },
-  "meta": {
-    "current_page": 1,
-    "from": 1,
-    "last_page": 1,
-    "path": "https://api.projectpod.test/v1/workspaces",
-    "per_page": 15,
-    "to": 1,
-    "total": 1
-  }
+  "status": 200
 }
 ```
+
+**Note**: No pagination for MVP. Returns all user workspaces.
 
 ### POST `/v1/workspaces`
 Create a new workspace.
 
-**Headers:** `Authorization: Bearer {token}`
+**Authentication**: Session-based
 
 **Request Body:**
 ```json
@@ -156,55 +137,44 @@ Create a new workspace.
 **Response (201):**
 ```json
 {
+  "message": "Workspace created successfully",
   "data": {
     "id": 2,
     "name": "Work Projects",
     "description": "Professional work projects",
     "color": "#ef4444",
-    "projects_count": 0,
     "created_at": "2025-01-01T00:00:00.000000Z",
     "updated_at": "2025-01-01T00:00:00.000000Z"
-  }
+  },
+  "status": 201
 }
 ```
 
 ### GET `/v1/workspaces/{workspace}`
-Get workspace details with projects.
+Get workspace details.
 
-**Headers:** `Authorization: Bearer {token}`
+**Authentication**: Session-based
 
 **Response (200):**
 ```json
 {
+  "message": "Workspace retrieved successfully",
   "data": {
     "id": 1,
     "name": "Personal Projects",
     "description": "My personal side projects",
     "color": "#3b82f6",
-    "projects_count": 5,
     "created_at": "2025-01-01T00:00:00.000000Z",
-    "updated_at": "2025-01-01T00:00:00.000000Z",
-    "projects": [
-      {
-        "id": 1,
-        "name": "Task Manager App",
-        "description": "A simple task management application",
-        "status": "active",
-        "due_date": null,
-        "tasks_count": 12,
-        "completed_tasks_count": 4,
-        "created_at": "2025-01-01T00:00:00.000000Z",
-        "updated_at": "2025-01-01T00:00:00.000000Z"
-      }
-    ]
-  }
+    "updated_at": "2025-01-01T00:00:00.000000Z"
+  },
+  "status": 200
 }
 ```
 
 ### PUT `/v1/workspaces/{workspace}`
 Update workspace.
 
-**Headers:** `Authorization: Bearer {token}`
+**Authentication**: Session-based
 
 **Request Body:**
 ```json
@@ -218,54 +188,44 @@ Update workspace.
 **Response (200):**
 ```json
 {
+  "message": "Workspace updated successfully",
   "data": {
     "id": 1,
     "name": "Updated Workspace Name",
     "description": "Updated description",
     "color": "#10b981",
-    "projects_count": 5,
     "created_at": "2025-01-01T00:00:00.000000Z",
     "updated_at": "2025-01-01T00:01:00.000000Z"
-  }
+  },
+  "status": 200
 }
 ```
 
 ### DELETE `/v1/workspaces/{workspace}`
-Delete workspace and all associated projects/tasks.
+Delete workspace.
 
-**Headers:** `Authorization: Bearer {token}`
+**Authentication**: Session-based
 
 **Response (204):** No content
 
-## Projects
+## Projects 📋 PENDING IMPLEMENTATION
 
 ### GET `/v1/projects`
 List all projects across all workspaces for authenticated user.
 
-**Headers:** `Authorization: Bearer {token}`
-
-**Query Parameters:**
-- `page` (integer): Page number
-- `per_page` (integer): Items per page
-- `status` (string): Filter by status (`active`, `completed`, `archived`)
-- `workspace_id` (integer): Filter by workspace
-- `has_tasks_due_before` (date): Projects with tasks due before date (Y-m-d)
-- `has_tasks_due_this_week` (boolean): Projects with tasks due this week
-- `include` (string): Comma-separated relations to include (`workspace`, `tasks`)
+**Authentication**: Session-based
 
 **Response (200):**
 ```json
 {
+  "message": "Projects retrieved successfully",
   "data": [
     {
       "id": 1,
       "name": "Task Manager App",
       "description": "A simple task management application",
       "workspace_id": 1,
-      "status": "active",
-      "due_date": null,
-      "tasks_count": 12,
-      "completed_tasks_count": 4,
+      "archived": false,
       "created_at": "2025-01-01T00:00:00.000000Z",
       "updated_at": "2025-01-01T00:00:00.000000Z",
       "workspace": {
@@ -275,74 +235,83 @@ List all projects across all workspaces for authenticated user.
       }
     }
   ],
-  "links": {
-    "first": "https://api.projectpod.test/v1/projects?page=1",
-    "last": "https://api.projectpod.test/v1/projects?page=1",
-    "prev": null,
-    "next": null
-  },
-  "meta": {
-    "current_page": 1,
-    "from": 1,
-    "last_page": 1,
-    "path": "https://api.projectpod.test/v1/projects",
-    "per_page": 15,
-    "to": 1,
-    "total": 1
-  }
+  "status": 200
 }
 ```
+
+## Projects ✅ IMPLEMENTED
+
+### GET `/v1/projects`
+List all projects for authenticated user (across all workspaces).
+
+**Authentication**: Session-based
+
+**Response (200):**
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "name": "Task Manager App",
+      "description": "A simple task management application",
+      "archived": false,
+      "workspace_id": 1,
+      "workspace_name": "Personal Projects",
+      "created_at": "2025-01-01T00:00:00.000000Z",
+      "updated_at": "2025-01-01T00:00:00.000000Z"
+    }
+  ]
+}
+```
+
+**Note**: No pagination for MVP. Uses `archived` boolean. Always includes `workspace_name` via eager loading.
 
 ### GET `/v1/workspaces/{workspace}/projects`
 List projects within specific workspace.
 
-**Headers:** `Authorization: Bearer {token}`
+**Authentication**: Session-based
 
-**Query Parameters:**
-- `page`, `per_page`, `status`, `include` (same as above)
-
-**Response (200):** Same format as above, filtered to workspace
+**Response (200):** Same format as `/v1/projects`, filtered to workspace
 
 ### POST `/v1/workspaces/{workspace}/projects`
 Create project in specific workspace.
 
-**Headers:** `Authorization: Bearer {token}`
+**Authentication**: Session-based
 
 **Request Body:**
 ```json
 {
   "name": "New Project",
-  "description": "Project description",
-  "status": "active",
-  "due_date": "2025-03-01"
+  "description": "Project description"
 }
 ```
+
+**Notes**: 
+- `archived` is optional (defaults to false)
+- `workspace_id` and `user_id` are set automatically from route and auth
 
 **Response (201):**
 ```json
 {
+  "message": "New Project project created successfully",
   "data": {
     "id": 2,
     "name": "New Project",
     "description": "Project description",
+    "archived": false,
     "workspace_id": 1,
-    "status": "active",
-    "due_date": "2025-03-01",
-    "tasks_count": 0,
-    "completed_tasks_count": 0,
+    "workspace_name": "Personal Projects",
     "created_at": "2025-01-01T00:00:00.000000Z",
     "updated_at": "2025-01-01T00:00:00.000000Z"
-  }
+  },
+  "status": 201
 }
 ```
 
 ### GET `/v1/projects/{project}`
 Get project details.
 
-**Headers:** `Authorization: Bearer {token}`
-
-**Query Parameters:**
-- `include` (string): Relations to include (`workspace`, `tasks`)
+**Authentication**: Session-based
 
 **Response (200):**
 ```json
@@ -351,102 +320,89 @@ Get project details.
     "id": 1,
     "name": "Task Manager App",
     "description": "A simple task management application",
+    "archived": false,
     "workspace_id": 1,
-    "status": "active",
-    "due_date": null,
-    "tasks_count": 12,
-    "completed_tasks_count": 4,
+    "workspace_name": "Personal Projects",
     "created_at": "2025-01-01T00:00:00.000000Z",
-    "updated_at": "2025-01-01T00:00:00.000000Z",
-    "workspace": {
-      "id": 1,
-      "name": "Personal Projects",
-      "color": "#3b82f6"
-    },
-    "tasks": [
-      {
-        "id": 1,
-        "title": "Set up authentication",
-        "description": "Implement Laravel Sanctum",
-        "status": "in_progress",
-        "priority": "high",
-        "due_date": null,
-        "completed_at": null,
-        "created_at": "2025-01-01T00:00:00.000000Z",
-        "updated_at": "2025-01-01T00:00:00.000000Z"
-      }
-    ]
+    "updated_at": "2025-01-01T00:00:00.000000Z"
   }
 }
 ```
 
 ### PUT `/v1/projects/{project}`
-Update project.
+Update project (supports partial updates).
 
-**Headers:** `Authorization: Bearer {token}`
+**Authentication**: Session-based
 
 **Request Body:**
 ```json
 {
   "name": "Updated Project Name",
   "description": "Updated description",
-  "status": "completed",
-  "due_date": "2025-04-01"
+  "archived": true
 }
 ```
+
+**Notes**:
+- All fields are optional (partial updates supported)
+- Cannot change `workspace_id` or `user_id`
 
 **Response (200):**
 ```json
 {
+  "message": "Updated Project Name project updated successfully",
   "data": {
     "id": 1,
     "name": "Updated Project Name",
     "description": "Updated description",
+    "archived": true,
     "workspace_id": 1,
-    "status": "completed",
-    "due_date": "2025-04-01",
-    "tasks_count": 12,
-    "completed_tasks_count": 4,
+    "workspace_name": "Personal Projects",
     "created_at": "2025-01-01T00:00:00.000000Z",
     "updated_at": "2025-01-01T00:01:00.000000Z"
-  }
+  },
+  "status": 200
 }
 ```
 
 ### DELETE `/v1/projects/{project}`
-Delete project and all associated tasks.
+Delete project and all associated tasks (cascade delete).
 
-**Headers:** `Authorization: Bearer {token}`
+**Authentication**: Session-based
 
-**Response (204):** No content
+**Response (204):**
+```json
+{
+  "message": "Project Name project deleted successfully",
+  "data": [],
+  "status": 204
+}
+```
 
-## Tasks
+## Tasks 📋 PENDING IMPLEMENTATION
 
-### GET `/v1/tasks` (Optional Future Feature)
+### GET `/v1/tasks`
 List all tasks across all projects for authenticated user.
 
-**Headers:** `Authorization: Bearer {token}`
+**Authentication**: Session-based
 
 **Query Parameters:**
-- `page`, `per_page` (pagination)
 - `status` (string): Filter by status (`todo`, `in_progress`, `done`)
-- `priority` (string): Filter by priority (`low`, `medium`, `high`)
 - `project_id` (integer): Filter by project
-- `due_before` (date): Tasks due before date (Y-m-d)
-- `due_this_week` (boolean): Tasks due this week
-- `include` (string): Relations to include (`project`, `project.workspace`)
+- `due_date` (date): Tasks due on date (Y-m-d)
 
 ### GET `/v1/projects/{project}/tasks`
 List tasks within specific project.
 
-**Headers:** `Authorization: Bearer {token}`
+**Authentication**: Session-based
 
 **Query Parameters:**
-- `page`, `per_page`, `status`, `priority`, `include`
+- `status` (string): Filter by status (`todo`, `in_progress`, `done`)
 
 **Response (200):**
 ```json
 {
+  "message": "Tasks retrieved successfully",
   "data": [
     {
       "id": 1,
@@ -454,20 +410,20 @@ List tasks within specific project.
       "description": "Implement Laravel Sanctum for API authentication",
       "project_id": 1,
       "status": "in_progress",
-      "priority": "high",
       "due_date": null,
       "completed_at": null,
       "created_at": "2025-01-01T00:00:00.000000Z",
       "updated_at": "2025-01-01T00:00:00.000000Z"
     }
-  ]
+  ],
+  "status": 200
 }
 ```
 
 ### POST `/v1/projects/{project}/tasks`
 Create task in specific project.
 
-**Headers:** `Authorization: Bearer {token}`
+**Authentication**: Session-based
 
 **Request Body:**
 ```json
@@ -475,7 +431,6 @@ Create task in specific project.
   "title": "New Task",
   "description": "Task description",
   "status": "todo",
-  "priority": "medium",
   "due_date": "2025-01-15"
 }
 ```
@@ -483,39 +438,37 @@ Create task in specific project.
 **Response (201):**
 ```json
 {
+  "message": "Task created successfully",
   "data": {
     "id": 2,
     "title": "New Task",
     "description": "Task description",
     "project_id": 1,
     "status": "todo",
-    "priority": "medium",
     "due_date": "2025-01-15",
     "completed_at": null,
     "created_at": "2025-01-01T00:00:00.000000Z",
     "updated_at": "2025-01-01T00:00:00.000000Z"
-  }
+  },
+  "status": 201
 }
 ```
 
 ### GET `/v1/tasks/{task}`
 Get task details.
 
-**Headers:** `Authorization: Bearer {token}`
-
-**Query Parameters:**
-- `include` (string): Relations to include (`project`, `project.workspace`)
+**Authentication**: Session-based
 
 **Response (200):**
 ```json
 {
+  "message": "Task retrieved successfully",
   "data": {
     "id": 1,
     "title": "Set up authentication",
     "description": "Implement Laravel Sanctum for API authentication",
     "project_id": 1,
     "status": "in_progress",
-    "priority": "high",
     "due_date": null,
     "completed_at": null,
     "created_at": "2025-01-01T00:00:00.000000Z",
@@ -528,14 +481,15 @@ Get task details.
         "name": "Personal Projects"
       }
     }
-  }
+  },
+  "status": 200
 }
 ```
 
 ### PUT `/v1/tasks/{task}`
 Update task.
 
-**Headers:** `Authorization: Bearer {token}`
+**Authentication**: Session-based
 
 **Request Body:**
 ```json
@@ -543,7 +497,6 @@ Update task.
   "title": "Updated Task Title",
   "description": "Updated description",
   "status": "done",
-  "priority": "low",
   "due_date": "2025-02-01"
 }
 ```
@@ -551,25 +504,26 @@ Update task.
 **Response (200):**
 ```json
 {
+  "message": "Task updated successfully",
   "data": {
     "id": 1,
     "title": "Updated Task Title",
     "description": "Updated description",
     "project_id": 1,
     "status": "done",
-    "priority": "low",
     "due_date": "2025-02-01",
     "completed_at": "2025-01-01T00:01:00.000000Z",
     "created_at": "2025-01-01T00:00:00.000000Z",
     "updated_at": "2025-01-01T00:01:00.000000Z"
-  }
+  },
+  "status": 200
 }
 ```
 
 ### PATCH `/v1/tasks/{task}/status`
 Update only task status (convenience endpoint).
 
-**Headers:** `Authorization: Bearer {token}`
+**Authentication**: Session-based
 
 **Request Body:**
 ```json
@@ -581,43 +535,44 @@ Update only task status (convenience endpoint).
 **Response (200):**
 ```json
 {
+  "message": "Task status updated successfully",
   "data": {
     "id": 1,
     "title": "Set up authentication",
     "description": "Implement Laravel Sanctum for API authentication",
     "project_id": 1,
     "status": "done",
-    "priority": "high",
     "due_date": null,
     "completed_at": "2025-01-01T00:01:00.000000Z",
     "created_at": "2025-01-01T00:00:00.000000Z",
     "updated_at": "2025-01-01T00:01:00.000000Z"
-  }
+  },
+  "status": 200
 }
 ```
 
 ### DELETE `/v1/tasks/{task}`
 Delete task.
 
-**Headers:** `Authorization: Bearer {token}`
+**Authentication**: Session-based
 
 **Response (204):** No content
 
-## Search
+## Search 🔮 FUTURE FEATURE
 
 ### GET `/v1/search`
 Global search across workspaces, projects, and tasks.
 
-**Headers:** `Authorization: Bearer {token}`
+**Authentication**: Session-based
 
 **Query Parameters:**
 - `q` (string, required): Search query
 - `type` (string): Filter by type (`workspaces`, `projects`, `tasks`)
-- `page`, `per_page` (pagination)
 
 **Response (200):**
 ```json
 {
+  "message": "Search results retrieved successfully",
   "data": {
     "workspaces": [
       {
@@ -646,7 +601,8 @@ Global search across workspaces, projects, and tasks.
         "type": "task"
       }
     ]
-  }
+  },
+  "status": 200
 }
 ```
 
@@ -684,13 +640,50 @@ Global search across workspaces, projects, and tasks.
 }
 ```
 
-## Laravel Implementation Notes
+## Implementation Status & Architecture
 
-- Use **Laravel API Resources** for consistent response formatting
-- Implement **Form Request classes** for validation (not inline validation)
-- Use **Route Model Binding** for automatic model resolution
-- Apply **Policy classes** for authorization
-- Use **Eloquent relationships** with proper eager loading
-- Implement **database indexes** on frequently queried fields
-- Use **Laravel pagination** for list endpoints
-- Apply **rate limiting** middleware for API protection
+### ✅ Completed Features
+- **Authentication**: Session-based via Laravel Sanctum for SPA
+- **Workspaces**: Full CRUD with ownership-based authorization
+- **Testing**: Comprehensive test suite (34 tests passing)
+
+### 📋 Pending Implementation
+- **Projects**: CRUD operations (controller scaffold exists)
+- **Tasks**: CRUD operations (controller scaffold exists)
+
+### 🔧 Architecture Decisions
+
+#### Authentication
+- **Session-based SPA auth** via Laravel Sanctum (NOT bearer tokens)
+- Frontend must call `/sanctum/csrf-cookie` before auth requests
+- CORS configured for cross-subdomain requests (`project-pod.test` ↔ `api.project-pod.test`)
+
+#### Routing Strategy
+- **Read operations**: Can be top-level (`/v1/projects`) or nested (`/v1/workspaces/{workspace}/projects`)
+- **Write operations**: MUST be nested under parent (`POST /v1/workspaces/{workspace}/projects`)
+
+#### Response Format
+- All responses use `ApiResponses` trait wrapper: `{message, data, status}`
+- Laravel API Resources transform the `data` portion
+- No server-side pagination for MVP (frontend handles filtering)
+
+#### Data Model
+- **Project**: Uses `archived` boolean (not status enum)
+- **Task**: Uses `status` enum (`todo`, `in_progress`, `done`)
+- **Workspace**: Optional `color` hex field
+
+#### Authorization
+- Ownership-based: Users can only access their own resources
+- Policy classes for all models
+- No sharing/collaboration features in MVP
+
+### Laravel Implementation Notes
+
+- **Form Request classes** for all validation
+- **Route Model Binding** with authorization checks
+- **Policy classes** for ownership-based access control
+- **Eloquent relationships** with eager loading
+- **Database factories** for test data generation
+- **Feature tests** for all endpoints
+- **PSR-4** code style with explicit return types
+- **PHP 8.4** constructor promotion where applicable
