@@ -6,11 +6,16 @@ use App\Http\Controllers\WorkspaceController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->group(function () {
+    // Workspaces
     Route::apiResource('workspaces', WorkspaceController::class);
-    Route::get('workspaces/{workspace}/projects', WorkspaceController::class.'@getProjects');
 
-    Route::apiResource('projects', ProjectController::class);
-    Route::get('projects/{project}/tasks', ProjectController::class.'@getTasks');
+    // Projects
+    Route::get('workspaces/{workspace}/projects', [ProjectController::class, 'index']); // nested read
+    Route::post('workspaces/{workspace}/projects', [ProjectController::class, 'store']); // nested create
+    Route::apiResource('projects', ProjectController::class)->only(['index', 'show', 'update', 'destroy']); // flat operations
 
-    Route::apiResource('tasks', TaskController::class);
+    // Tasks
+    Route::get('projects/{project}/tasks', [TaskController::class, 'index']); // nested read
+    Route::post('projects/{project}/tasks', [TaskController::class, 'store']); // nested create
+    Route::apiResource('tasks', TaskController::class)->only(['index', 'show', 'update', 'destroy']); // flat operations
 });
