@@ -1,192 +1,173 @@
 <?php
 
-namespace Tests\Feature;
-
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
-class AuthTest extends TestCase
-{
-    use RefreshDatabase;
+uses(Tests\TestCase::class, \Illuminate\Foundation\Testing\RefreshDatabase::class);
 
-    public function test_user_can_register_with_valid_data(): void
-    {
-        $userData = [
-            'name' => 'John Doe',
-            'email' => 'john@example.com',
-            'password' => 'password123',
-            'password_confirmation' => 'password123',
-        ];
+it('allows users to register with valid data', function () {
+    $userData = [
+        'name' => 'John Doe',
+        'email' => 'john@example.com',
+        'password' => 'password123',
+        'password_confirmation' => 'password123',
+    ];
 
-        $response = $this->postJson('/auth/register', $userData);
+    $response = $this->postJson('/auth/register', $userData);
 
-        $response->assertStatus(201)
-            ->assertJsonStructure([
-                'message',
-                'data' => [
-                    'user' => ['id', 'name', 'email', 'created_at', 'updated_at'],
-                ],
-                'status',
-            ]);
-
-        $this->assertDatabaseHas('users', [
-            'email' => 'john@example.com',
-            'name' => 'John Doe',
+    $response->assertStatus(201)
+        ->assertJsonStructure([
+            'message',
+            'data' => [
+                'user' => ['id', 'name', 'email', 'created_at', 'updated_at'],
+            ],
+            'status',
         ]);
 
-        $this->assertAuthenticated();
-    }
+    $this->assertDatabaseHas('users', [
+        'email' => 'john@example.com',
+        'name' => 'John Doe',
+    ]);
 
-    public function test_user_cannot_register_with_existing_email(): void
-    {
-        User::factory()->create(['email' => 'existing@example.com']);
+    $this->assertAuthenticated();
+});
 
-        $userData = [
-            'name' => 'Jane Doe',
-            'email' => 'existing@example.com',
-            'password' => 'password123',
-            'password_confirmation' => 'password123',
-        ];
+it('prevents registration with existing email', function () {
+    User::factory()->create(['email' => 'existing@example.com']);
 
-        $response = $this->postJson('/auth/register', $userData);
+    $userData = [
+        'name' => 'Jane Doe',
+        'email' => 'existing@example.com',
+        'password' => 'password123',
+        'password_confirmation' => 'password123',
+    ];
 
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['email']);
-    }
+    $response = $this->postJson('/auth/register', $userData);
 
-    public function test_user_cannot_register_without_required_fields(): void
-    {
-        $response = $this->postJson('/auth/register', []);
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['email']);
+});
 
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['name', 'email', 'password']);
-    }
+it('prevents registration without required fields', function () {
+    $response = $this->postJson('/auth/register', []);
 
-    public function test_user_cannot_register_with_invalid_email(): void
-    {
-        $userData = [
-            'name' => 'John Doe',
-            'email' => 'not-an-email',
-            'password' => 'password123',
-            'password_confirmation' => 'password123',
-        ];
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['name', 'email', 'password']);
+});
 
-        $response = $this->postJson('/auth/register', $userData);
+it('prevents registration with invalid email', function () {
+    $userData = [
+        'name' => 'John Doe',
+        'email' => 'not-an-email',
+        'password' => 'password123',
+        'password_confirmation' => 'password123',
+    ];
 
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['email']);
-    }
+    $response = $this->postJson('/auth/register', $userData);
 
-    public function test_user_cannot_register_with_short_password(): void
-    {
-        $userData = [
-            'name' => 'John Doe',
-            'email' => 'john@example.com',
-            'password' => 'short',
-            'password_confirmation' => 'short',
-        ];
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['email']);
+});
 
-        $response = $this->postJson('/auth/register', $userData);
+it('prevents registration with short password', function () {
+    $userData = [
+        'name' => 'John Doe',
+        'email' => 'john@example.com',
+        'password' => 'short',
+        'password_confirmation' => 'short',
+    ];
 
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['password']);
-    }
+    $response = $this->postJson('/auth/register', $userData);
 
-    public function test_user_cannot_register_with_mismatched_password_confirmation(): void
-    {
-        $userData = [
-            'name' => 'John Doe',
-            'email' => 'john@example.com',
-            'password' => 'password123',
-            'password_confirmation' => 'different123',
-        ];
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['password']);
+});
 
-        $response = $this->postJson('/auth/register', $userData);
+it('prevents registration with mismatched password confirmation', function () {
+    $userData = [
+        'name' => 'John Doe',
+        'email' => 'john@example.com',
+        'password' => 'password123',
+        'password_confirmation' => 'different123',
+    ];
 
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['password']);
-    }
+    $response = $this->postJson('/auth/register', $userData);
 
-    public function test_user_can_login_with_valid_credentials(): void
-    {
-        $user = User::factory()->create([
-            'email' => 'john@example.com',
-            'password' => bcrypt('password123'),
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['password']);
+});
+
+it('allows users to login with valid credentials', function () {
+    $user = User::factory()->create([
+        'email' => 'john@example.com',
+        'password' => bcrypt('password123'),
+    ]);
+
+    $response = $this->postJson('/auth/login', [
+        'email' => 'john@example.com',
+        'password' => 'password123',
+    ]);
+
+    $response->assertStatus(200)
+        ->assertJsonStructure([
+            'message',
+            'data' => [
+                'user' => ['id', 'name', 'email'],
+            ],
+            'status',
         ]);
 
-        $response = $this->postJson('/auth/login', [
-            'email' => 'john@example.com',
-            'password' => 'password123',
+    $this->assertAuthenticated();
+});
+
+it('prevents login with invalid credentials', function () {
+    User::factory()->create([
+        'email' => 'john@example.com',
+        'password' => bcrypt('password123'),
+    ]);
+
+    $response = $this->postJson('/auth/login', [
+        'email' => 'john@example.com',
+        'password' => 'wrongpassword',
+    ]);
+
+    $response->assertStatus(401)
+        ->assertJson([
+            'message' => 'Invalid credentials',
         ]);
 
-        $response->assertStatus(200)
-            ->assertJsonStructure([
-                'message',
-                'data' => [
-                    'user' => ['id', 'name', 'email'],
-                ],
-                'status',
-            ]);
+    $this->assertGuest();
+});
 
-        $this->assertAuthenticated();
-    }
+it('prevents login with nonexistent email', function () {
+    $response = $this->postJson('/auth/login', [
+        'email' => 'nonexistent@example.com',
+        'password' => 'password123',
+    ]);
 
-    public function test_user_cannot_login_with_invalid_credentials(): void
-    {
-        User::factory()->create([
-            'email' => 'john@example.com',
-            'password' => bcrypt('password123'),
-        ]);
+    $response->assertStatus(401);
+    $this->assertGuest();
+});
 
-        $response = $this->postJson('/auth/login', [
-            'email' => 'john@example.com',
-            'password' => 'wrongpassword',
-        ]);
+it('prevents login without required fields', function () {
+    $response = $this->postJson('/auth/login', []);
 
-        $response->assertStatus(401)
-            ->assertJson([
-                'message' => 'Invalid credentials',
-            ]);
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['email', 'password']);
+});
 
-        $this->assertGuest();
-    }
+it('allows authenticated users to logout', function () {
+    $user = User::factory()->create();
 
-    public function test_user_cannot_login_with_nonexistent_email(): void
-    {
-        $response = $this->postJson('/auth/login', [
-            'email' => 'nonexistent@example.com',
-            'password' => 'password123',
-        ]);
+    $response = $this->actingAs($user)->postJson('/auth/logout');
 
-        $response->assertStatus(401);
-        $this->assertGuest();
-    }
+    $response->assertStatus(200)
+        ->assertJsonStructure(['message', 'status']);
 
-    public function test_user_cannot_login_without_required_fields(): void
-    {
-        $response = $this->postJson('/auth/login', []);
+    $this->assertGuest();
+});
 
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['email', 'password']);
-    }
+it('prevents unauthenticated users from logging out', function () {
+    $response = $this->postJson('/auth/logout');
 
-    public function test_authenticated_user_can_logout(): void
-    {
-        $user = User::factory()->create();
-
-        $response = $this->actingAs($user)->postJson('/auth/logout');
-
-        $response->assertStatus(200)
-            ->assertJsonStructure(['message', 'status']);
-
-        $this->assertGuest();
-    }
-
-    public function test_unauthenticated_user_cannot_logout(): void
-    {
-        $response = $this->postJson('/auth/logout');
-
-        $response->assertStatus(401);
-    }
-}
+    $response->assertStatus(401);
+});
