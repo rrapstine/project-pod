@@ -94,9 +94,9 @@ nuclear:
     #!/usr/bin/env bash
     echo "☢️  NUCLEAR REBUILD - Removing ALL podman data..."
     echo "This will remove all images, containers, and volumes!"
-    read -p "Are you sure? (y/N): " -n 1 -r
+    read -p "Are you sure? (y/N): " -r
     echo
-    if [[ $$REPLY =~ ^[Yy]$$ ]]; then
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
         podman compose down
         podman system prune -a -f --volumes
         podman compose up -d

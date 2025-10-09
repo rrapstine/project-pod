@@ -18,6 +18,17 @@
 - NO comments in code; use PHPDoc only when needed
 - Always use explicit return types in PHP
 
+## Frontend Stack
+- React + Vite + TypeScript
+- Tailwind CSS with shadcn/ui components
+- react-hook-form for form handling
+- zod/mini v4 for schema validation
+
+## Design Inspiration
+- Design vision heavily inspired by Purity UI Dashboard (https://github.com/creativetimofficial/purity-ui-dashboard)
+- Modern, clean admin dashboard aesthetic with Chakra UI-like design patterns
+- Focus on beautiful UI elements, cards, tables, and professional layouts
+
 ## Laravel/Project Rules
 - Use `php artisan make:` for new files
 - Use Form Request classes for validation
