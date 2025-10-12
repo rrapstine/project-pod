@@ -1,6 +1,8 @@
 # AGENTS.md
 
-**REVIEW INSTRUCTIONS.md FOR FOR BEHAVIOR CONTEXT**
+## Critical Instructions
+- **REVIEW INSTRUCTIONS.md FOR FOR BEHAVIOR CONTEXT**
+- **REVIEW API_SPEC.md FOR API CONTEXT**
 
 ## Build, Lint, and Test
 - Backend: `just test` (all), `just artisan test --filter=TestName` (single), `just artisan test tests/Feature/ExampleTest.php` (file)
@@ -15,8 +17,10 @@
 - PHP: PSR-4, snake_case methods, PascalCase classes, curly braces always
 - TypeScript: camelCase for variables/functions, PascalCase for components
 - Group imports: external libs first, then local imports
-- NO comments in code; use PHPDoc only when needed
+- Prefer docblocks over comments inside code
 - Always use explicit return types in PHP
+- Always favor function declarations over function expressions
+- *ALL CODE SHOULD FAVOR READABILITY AND MAINTAINABILITY OVER 'BEING CLEVER'*
 
 ## Frontend Stack
 - React + Vite + TypeScript
@@ -48,9 +52,9 @@
 ## Commit Management
 - **ALWAYS** create semantic commits for all changes since last session
 - **NEVER** commit without explicit user request
-- Use semantic commit format: `type(scope): description`
+- Use semantic commit format: `type: description`
 - Types: feat, fix, refactor, docs, chore, test, style
 - Group related changes into logical commits
 - Check `git status`, `git diff`, and `git log` before committing
 - Create multiple commits if changes span different concerns
-- Example: `feat(auth): implement logout with session management`
+- Example: `feat: implement logout with session management`

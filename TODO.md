@@ -116,6 +116,15 @@
 - [ ] Add example requests for all endpoints
 - [ ] Document error codes and responses
 
+### Type Safety & Code Generation
+
+- [ ] Implement Scramble for Laravel OpenAPI generation
+- [ ] Set up OpenAPI TypeScript client generation
+- [ ] Configure automated type generation in build process
+- [ ] Migrate from manual zod schemas to generated types
+- [ ] Add CI/CD pipeline for API type synchronization
+- [ ] Document API development workflow with Scramble
+
 ## Frontend
 
 ### UI/UX
